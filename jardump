@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 jarfile=start
 find . -type f -name "*.jar" | (
