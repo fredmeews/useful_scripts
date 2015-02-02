@@ -1,0 +1,10 @@
+#!/bin/bash -x
+
+jarfile=start
+find . -type f -name "*.jar" | (
+     while [ ! -z "$jarfile" ]; do
+           read jarfile
+  	   echo "============== $jarfile =============="
+	   jar tvf $jarfile
+     done
+)
