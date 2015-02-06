@@ -1,0 +1,20 @@
+#!/bin/bash 
+
+#C="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+
+ps -ef | grep Chrome | grep -v Helper | grep -v grep > /dev/null 2>&1
+running=$?
+
+if [ $running -eq 1 ]; then 
+   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome > /dev/null 2>&1 &
+   sleep 1
+fi
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window https://trello.com/b/eJBSrKPg/conversations > /dev/null 2>&1
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome https://trello.com/b/afTtSsCs/weekend > /dev/null 2>&1
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome https://trello.com/b/0l4YMdmM/dev > /dev/null 2>&1
+
+
+
+
+
