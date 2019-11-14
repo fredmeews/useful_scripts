@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Usage:
+# export M=odb-p01 && scp sarme $M:~ && ssh $M bash -x sarme && scp $M:/tmp/sar*.txt .
+
+DAY1="23"
+DAY2="24"
+START="00:00:00" END="23:59:59"
+
+# Use grep -v to get raw data w/o averages
+GREP="grep -E"
+
+rm -f /tmp/sar_*.txt
+for day in $DAY1 $DAY2; do
+    FILE="/tmp/sar_$HOST_$day.txt"
+    
+    SAR="sar -f /var/log/sa/sa${day} -s $START -e $END"
+    $SAR | $GREP '(Linux)' >> $FILE
+
+    echo "##### Load average #####" >> $FILE
+    $SAR -q | $GREP '(runq|Average)' >> $FILE
+
+    echo "##### CPU #####" >> $FILE
+    $SAR -u  | $GREP '(nice|Average)' >> $FILE
+
+    echo "##### Memory #####" >> $FILE
+    $SAR -r  | $GREP '(kbmem|Average)'  >> $FILE
+
+    echo "##### Swap #####" >> $FILE
+    $SAR -S  | $GREP '(swp|Average)' >> $FILE
+
+    echo "##### Memory #####" >> $FILE
+    $SAR -r  | $GREP '(kbmem|Average)'  >> $FILE
+
+    echo "##### IO #####" >> $FILE
+    $SAR -p -d  | $GREP '(tps|Average)' >> $FILE
+
+    echo "##### Network #####" >> $FILE
+    $SAR -n DEV  | $GREP '(IFACE|Average)'  >> $FILE
+
+    echo "##### Network Errors #####" >> $FILE
+    $SAR -n EDEV  | $GREP '(IFACE|Average)'  >> $FILE
+
+    echo "##### Network NFS #####" >> $FILE
+    $SAR -n NFS  | $GREP '(retrans|Average)'  >> $FILE
+done
+

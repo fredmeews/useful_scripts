@@ -1,3 +1,3 @@
 #!/bin/bash 
 
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --content-shell-host-window-size=800x600 --new-window 
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir --disable-web-security --content-shell-host-window-size=1800x600 --start-fullscreen --new-window &

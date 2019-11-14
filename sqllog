@@ -1,0 +1,25 @@
+#!/bin/bash
+input="$1"
+
+while IFS= read -r line
+do
+    minute=$(echo $line | awk -F: '{print $2}')
+    
+    if [[ $line =~ 'connecting' ]]; then
+	M1=$minute
+    fi
+
+    if [[ $line =~ 'done' ]]; then
+	M2=$minute
+#	echo "M1 = $M1   M2 = $M2"
+
+	if [[ $M1 != $M2 ]]; then
+	    echo $prevline
+	    echo $line
+	    echo "--"
+	fi 
+    fi
+
+    prevline=$line
+
+done < "$input"

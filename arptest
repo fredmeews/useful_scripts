@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# export S=odb-p07; scp arptest $S:~ && ssh $S "chmod 777 arptest && ./arptest"
+
+while : ; do
+    dt=$(date)
+    echo "======== $dt"
+    /sbin/arp -a | grep -C 2 incomplete
+    sleep 5
+done
+

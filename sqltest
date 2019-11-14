@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# nohup ./pingtest ashpiclodb-p01 > prodrw1-pingtest.log 2>&1 &
+# nohup ./sqltest prodrw1 > prodrw1.log 2>&1 &
+
+# nohup ./pingtest ashpiclodb-p04 > prodrw4-pingtest.log 2>&1 &
+# nohup ./sqltest prodrw4 > prodrw4.log 2>&1 &
+
+# nohup ./pingtest ashpiclodb-p07 > prodrw7-pingtest.log 2>&1 &
+# nohup ./sqltest prodrw7 > prodrw7.log 2>&1 &
+
+# export S=odb-p07; scp sqltest $S:~ && ssh $S "chmod 777 sqltest && ./sqltest prodrw7"
+
+
+OUT="sql.$$"
+
+export ORACLE_BASE=/opt/oracle
+#export ORACLE_HOME=/opt/oracle/product/12.1.0.2/client
+export ORACLE_HOME=/u01/app/oracle/product/12.1.0.2/db_1
+export ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/usr/openwin/lib:/usr/dt/lib:$ORACLE_HOME/ctx/lib
+export NLS_DATE_FORMAT='DD-MON-YYYY HH24:MI:SS'
+export NLS_LANG=AMERICAN_AMERICA.UTF8
+export TNS_ADMIN=$ORACLE_HOME/network/admin
+export PATH=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/bin:/etc:/usr/sbin:/usr/ucb:/usr/bin/X11:/sbin:$ORACLE_HOME/bin
+
+while : ; do
+      date=$(date)
+      echo ">> $date : connecting"
+
+#sql -q pic_ops/p1c0ps@//ashpiclodb-p04.advisory.com:1521/prodrw4 << EOF
+     sqlplus -S pic_ops/p1c0ps@${1} > $OUT 2>&1 << EOF
+whenever sqlerror exit sql.sqlcode;
+ALTER SESSION SET sql_trace = true;
+ALTER SESSION SET tracefile_identifier = Testing;
+set echo off
+set heading off
+set timing on
+select 'MYSID: ' || tracefile from v\$process join v\$session on (addr=paddr) where sys_context('userenv','sessionid') = audsid;
+exit;
+EOF
+     date=$(date)
+     sid=$(grep 'MYSID: ' $OUT)
+      echo "<< $date : done $sid"
+      echo "--"
+      sleep 10
+      rm -f $OUT
+done

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# ./pingtest ashpiclodb-p07
+
+host=$1
+if [ -z "$host" ]; then
+   host=slashdot.org
+fi
+
+while : ; do
+    date
+    ping -t 5 -c 1 $host | grep -E '(from|Unreachable)'
+#    echo "--"
+#    arp -a 
+    echo "--------------"
+    sleep 2
+done
+

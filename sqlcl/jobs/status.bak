@@ -1,0 +1,104 @@
+// Usage:
+//
+// jobs - show jobs currently in queue
+// jobs history 1 2 --- show jobs between 1 and 2 days ago
+// 
+
+var historyMode = false;
+var table = "job_queue";
+var start, end;
+
+var jobSession = {};
+getJobSessions(jobSession);
+
+var binds = {};
+binds.limit = 30;
+if (args.length >  1) {
+    if (args[1] == "history") {
+	historyMode = true;
+	start = args[2];
+	end = args[3];
+	binds.limit = 100000; //no limit
+	table = "job_history";
+    }
+    else {
+	binds.limit = args[1];
+    }
+}
+
+var sql = "select " +
+    "  upper(status) status, " +
+    "  job_no, " +
+    "  name, " +
+    "  to_char(start_date, 'MM/DD/YYYY_HH24:MI') startd, " +
+    "  job_template_id " +
+    "from " + table + " " +
+    (historyMode ? "where start_date > sysdate - " + end + " and start_date < sysdate - " + start + " " : " ") + 
+    "order by  " +
+    "   case " +
+    "       when status like 'ERROR%' then 1 " +
+    "       when status = 'RUNNING' then 2 " +
+    "       when status like '%QUEUED%' then 3 " +
+    "       when status like 'SUSPEND%' then 4 " +
+    "       else 5 " +
+    "    end " +
+    "fetch first :limit rows only ";
+
+//ctx.write(sql + '\n\n\n'); // DEBUG
+//var ret = util.executeReturnListofList('select sysdate, \'foo\' from dual' ,null);
+
+var ret = util.executeReturnList(sql, binds);
+
+var prevStatus = "";
+var count = 0;
+for (var i = 0; i < ret.length; i++) {
+    if (ret[i].STATUS != prevStatus) {
+	ctx.write("TOTAL: " + count + "\n");
+	ctx.write( "\n\n======= " + ret[i].STATUS +  " =======\n");
+	count = 0;
+    }
+
+    var sid = jobSession[ret[i].JOB_NO];
+    if (!sid) sid = "\t";
+    var jobNo = ret[i].JOB_NO + " (" + sid + ")";
+    
+    ctx.write( jobNo + "\t" + ret[i].STARTD +  "\t" + ret[i].NAME);
+
+    count++;
+    prevStatus = ret[i].STATUS;
+}
+
+ctx.write("TOTAL: " + count + "\n\n");
+
+
+
+
+
+function getJobSessions( jobSession ) {
+    var sql = "select sid, serial# serial, client_info from v$session where client_info is not null";
+    var ret = util.executeReturnList(sql, {});;
+
+    var prevStatus = "";
+    var count = 0;
+    for (var i = 0; i < ret.length; i++) {
+	var clientInfo = ret[i].CLIENT_INFO;
+	if (clientInfo.indexOf("JobNo") == -1) continue;
+	
+//	ctx.write( ret[i].CLIENT_INFO +  "\t" + ret[i].SID + "\t" + ret[i].SERIAL + "\n" );
+
+	var field = clientInfo.split(".")[0];
+	var jobNo = field.split("=")[1];
+//	ctx.write( "fields: " + field + "\t" + "jobno: " + jobNo + "\n");
+
+	jobSession[jobNo] = ret[i].SID + "," + ret[i].SERIAL;
+    }
+
+    // for(jobNo in jobSession){
+    // 	var sid = jobSession[jobNo];
+    // 	ctx.write( "jobno " + jobNo + " sid: " + sid + "\n");
+    // }
+}
+
+
+
+
