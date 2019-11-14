@@ -1,9 +1,8 @@
 #!/opt/local/bin/python
 
 """
-A Translation module.
+Translate text in drawio docs (in uncompressed xml) to another language using Google Translate.
 
-You can translate text using this module.
 """
 import codecs
 import time
