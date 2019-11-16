@@ -71,6 +71,7 @@ for node in nodes:
         if (style and "html=1" in style and text):
             print "1: ",  text
 
+            # More parsing necessary to parse text from inner font tag
             if ("<font" in text):
                 parser.feed(text)
 
